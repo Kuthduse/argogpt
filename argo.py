@@ -1,8 +1,5 @@
 import argparse
 
-# 替代 upgrade 函数（删除原有 upgrade() 逻辑）
-
-# 修改 install 函数增加外部传参支持
 def install(uuid_arg=None, port_arg=None, domain_arg=None, token_arg=None):
     if not os.path.exists(str(INSTALL_DIR)):
         os.makedirs(str(INSTALL_DIR), exist_ok=True)
@@ -102,11 +99,13 @@ cd {INSTALL_DIR}
     start_services()
 
     if domain_arg and token_arg:
-        generate_links(domain_arg, port_vm_ws, uuid_str)
+        b64 = generate_links(domain_arg, port_vm_ws, uuid_str)
+        print(b64)
     else:
         domain = get_tunnel_domain()
         if domain:
-            generate_links(domain, port_vm_ws, uuid_str)
+            b64 = generate_links(domain, port_vm_ws, uuid_str)
+            print(b64)
         else:
             print("无法获取tunnel域名")
             sys.exit(1)
