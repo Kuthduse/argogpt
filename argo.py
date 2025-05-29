@@ -78,6 +78,25 @@ def install(uuid_arg=None, port_arg=None, domain_arg=None, token_arg=None):
         json.dump(config_data, f, indent=2)
 
     create_sing_box_config(port_vm_ws, uuid_str)
+
+    # 根据参数创建 cloudflared 启动脚本
+    cf_start_script = INSTALL_DIR / "start_cf.sh"
+    if domain_arg and token_arg:
+        # 固定域名方式
+        with open(str(cf_start_script), 'w') as f:
+            f.write(f'''#!/bin/bash
+cd {INSTALL_DIR}
+./cloudflared tunnel --url http://localhost:{port_vm_ws}/ --no-autoupdate run --token {token_arg} > argo.log 2>&1 & echo $! > sbargopid.log
+''')
+    else:
+        # 临时域名方式
+        with open(str(cf_start_script), 'w') as f:
+            f.write(f'''#!/bin/bash
+cd {INSTALL_DIR}
+./cloudflared tunnel --url http://localhost:{port_vm_ws}/ --edge-ip-version auto --no-autoupdate --protocol http2 > argo.log 2>&1 & echo $! > sbargopid.log
+''')
+    os.chmod(str(cf_start_script), 0o755)
+
     create_startup_script(port_vm_ws)
     setup_autostart()
     start_services()
